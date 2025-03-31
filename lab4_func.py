@@ -9,48 +9,47 @@ Angles are in radian, distance are in meters.
 """
 def Get_MS():
 	# =================== Your code starts here ====================#
-	# Fill in the correct values for S1~6, as well as the M matrix
-
-	# Define M, S
-	M = np.array([
-		[0,  -1,  0,  0.39],
-		[0, 0,  -1,  0.401],
-		[1,  0,  0, 0.2155],
-		[0,  0,  0,  1]
-	])
-
-	S = np.zeros((6, 6))
-
-	w_list = [ # joint rotation axes
-        np.array([0, 0, 1]),
-        np.array([0, 1, 0]),
-        np.array([0, 1, 0]),
-        np.array([0, 1, 0]),
-		np.array([1, 0, 0]),
-		np.array([0, 1, 0])
-    ]
-
-	q_list = [ # joint positions
-        np.array([-0.15, 0.15, 0.162]), 
-        np.array([-0.15, 0.27, 0.162]),
-        np.array([0.094, 0.27, 0.162]), 
-        np.array([0.307, 0.177, 0.162]),
-		np.array([0.307, 0.26, 0.162]),
-		np.array([0.39, 0.26, 0.162])
-    ]
-
-	# Define 6 positions for q,w,v,S
-
-	for i in range(6):
-		w = w_list[i]
-		q = q_list[i]
-		v = np.cross(-w, q)
-		S[:, i] = np.concatenate([w, v])
-
+	# Fill in the correct values for a1~6 and q1~6, as well as the M matrix
+	M = np.array([[0, -1, 0, 390], [0, 0, -1, 401], [1, 0, 0, 215.5], [0, 0, 0, 1]])
+	
+	w1 = np.array([0, 0, 1])
+	w2 = np.array([0, 1, 0])
+	w3 = np.array([0, 1, 0])
+	w4 = np.array([0, 1, 0])
+	w5 = np.array([1, 0, 0])
+	w6 = np.array([0, 1, 0])
+	q1 = np.array([-150,150,10])
+	q2 = np.array([-150,270,162])
+	q3 = np.array([94,270,162])
+	q4 = np.array([307,177,162])
+	q5 = np.array([307,260,162])	
+	q6 = np.array([390,260,162])
+	v1 = np.cross(-w1, q1)
+	v2 = np.cross(-w2, q2)
+	v3 = np.cross(-w3, q3)
+	v4 = np.cross(-w4, q4)
+	v5 = np.cross(-w5, q5)
+	v6 = np.cross(-w6, q6)
+	S1 = np.array([[0, -w1[2], w1[1], v1[0]], [w1[2], 0, -w1[0], v1[1]], [-w1[1], w1[0], 0, v1[2]], [0, 0, 0, 0]])
+	S2 = np.array([[0, -w2[2], w2[1], v2[0]], [w2[2], 0, -w2[0], v2[1]], [-w2[1], w2[0], 0, v2[2]], [0, 0, 0, 0]])
+	S3 = np.array([[0, -w3[2], w3[1], v3[0]], [w3[2], 0, -w3[0], v3[1]], [-w3[1], w3[0], 0, v3[2]], [0, 0, 0, 0]])
+	S4 = np.array([[0, -w4[2], w4[1], v4[0]], [w4[2], 0, -w4[0], v4[1]], [-w4[1], w4[0], 0, v4[2]], [0, 0, 0, 0]])
+	S5 = np.array([[0, -w5[2], w5[1], v5[0]], [w5[2], 0, -w5[0], v5[1]], [-w5[1], w5[0], 0, v5[2]], [0, 0, 0, 0]])
+	S6 = np.array([[0, -w6[2], w6[1], v6[0]], [w6[2], 0, -w6[0], v6[1]], [-w6[1], w6[0], 0, v6[2]], [0, 0, 0, 0]])
+	
+	L1 = 152
+	L2 = 120
+	L3 = 244
+	L4 = 93
+	L5 = 213
+	L6 = 83
+	L7 = 83
+	L8 = 82
+	L9 = 53.5
 	print(M, "\n")
-	print(S, "\n")
+
 	# ==============================================================#
-	return M, S
+	return M, S1, S2, S3, S4, S5, S6
 
 
 """
@@ -61,45 +60,18 @@ def lab_fk(theta1, theta2, theta3, theta4, theta5, theta6):
 	# Initialize the return_value
 	return_value = [None, None, None, None, None, None]
 
-	# =========== Implement joint angle to encoder expressions here ===========
 	print("Foward kinematics calculated:\n")
 
-
 	# =================== Your code starts here ====================#
-
-	# Get theta, M, S, T
-	thetas = np.array([theta1, theta2, theta3, theta4, theta5, theta6])
-
-	M, S = Get_MS()
-
+	theta = np.array([theta1,theta2,theta3,theta4,theta5,theta6])
 	T = np.eye(4)
 
-	for i in range(6):
+	M, S1, S2, S3, S4, S5, S6= Get_MS()
+	T = expm(S1*theta1)@expm(S2*theta2)@expm(S3*theta3)@expm(S4*theta4)@expm(S5*theta5)@expm(S6*theta6)@M
 
-		# Extract w,v
-		w = S[:3, i]
-		v = S[3:, i]
-	
-		# Build S matrix
-		S_matrix = np.zeros((4, 4))
-		S_matrix[0:3, 0:3] = np.array([
-			[0, -w[2], w[1]],
-			[w[2], 0, -w[0]],
-			[-w[1], w[0], 0]
-		])
-		S_matrix[0:3, 3] = v
-	
-		# Matrix exponential
-		T_i = expm(S_matrix * thetas[i])
-	
-		T = T @ T_i
-	
-	T = T @ M
 
-	np.set_printoptions(suppress=True, precision=8)
 
 	# ==============================================================#
-
 	print(str(T) + "\n")
 
 	return_value[0] = theta1 + PI
@@ -117,68 +89,59 @@ Function that calculates an elbow up Inverse Kinematic solution for the UR3
 """
 def lab_invk(xWgrip, yWgrip, zWgrip, yaw_WgripDegree):
 	# =================== Your code starts here ====================#
- 
-	# Points list
-	L1 = 0.152
-	L2 = 0.120
-	L3 = 0.244
-	L4 = 0.093
-	L5 = 0.213
-	L6 = 0.083
-	L7 = 0.083
-	L8 = 0.082
-	L9 = 0.0535
-	L10 = 0.059
-	end_dist = 0.027
- 
-	# deg to rad
-	yaw = np.deg2rad(yaw_WgripDegree)
- 
-	# coordinate conversion
-	xgrip = xWgrip + 0.15
-	ygrip = yWgrip - 0.15
-	zgrip = zWgrip - 0.01
+	L1 = 152
+	L2 = 120
+	L3 = 244
+	L4 = 93
+	L5 = 213
+	L6 = 83
+	L7 = 83
+	L8 = 82
+	L9 = 53.5
+	print(xWgrip)
+	xWgrip = xWgrip*1000 + 150
+	yWgrip = yWgrip*1000 - 150
+	zWgrip = zWgrip*1000 - 10
+	yaw_WgripDegree = np.deg2rad(yaw_WgripDegree)
+	xcen =  xWgrip - (L9*np.cos(yaw_WgripDegree))
+	ycen = yWgrip - (L9*np.sin(yaw_WgripDegree))
+	zcen  = zWgrip
 	
-	# center coordinates
-	xcenter = xgrip - L9 * np.cos(yaw)
-	ycenter = ygrip - L9 * np.sin(yaw)
-	zcenter = zgrip
-
-	# theta1
-	theta_large = np.arctan2(ycenter, xcenter)
-	theta_small = np.arcsin((L6 + end_dist) / (np.sqrt(xcenter**2 + ycenter**2)))
-	theta1 = theta_large - theta_small
- 
-	# theta6
-	theta6 = theta1 + np.pi / 2 - yaw
- 
-	# 3end coordinates
+	a = np.sqrt(xcen**2 + ycen**2)
+	b = L2-L4+L6
+	print(a)
+	print(b)
+	stheta = np.arcsin(b/a)
+	total_theta = np.arctan(ycen/xcen)
+	theta1 = total_theta - stheta
+	# print(theta1)
+	theta6 = (np.pi/2)-yaw_WgripDegree+theta1
+ #####################################################################
+	x3end = xcen - np.cos(theta1)*L7 + np.sin(theta1)*110 # 83+27
+	y3end = ycen - np.sin(theta1)*L7 + np.cos(theta1)*110
+	z3end = zcen + 59 + L8
 	
-	end3x = (np.sqrt(xcenter**2 + ycenter**2) * np.cos(theta_small)) - L7
-	x3end = end3x * np.cos(theta1)
-	y3end = end3x * np.sin(theta1)
-	z3end = zcenter + L10 + L8
-	
-	# theta3
+ 
 	r = np.sqrt(x3end**2 + y3end**2)
-	z_offset = z3end - L1
-	d = np.sqrt(r**2 + z_offset**2)
+	 
+	delta_z = z3end - L1
+	d = np.sqrt(r**2 + delta_z**2)
 	v = np.arccos((L5**2 + L3**2 - d**2) / (2 * L5 * L3))
 	theta3 = np.pi - v
+	theta2_1 = np.arccos(r / d)
+	theta2_2 = np.arccos((L3**2 + d**2 - L5**2) / (2 * L3 * d))
+	
+	theta2 = -(theta2_1 + theta2_2)
  
-	# theta2
-	theta2a = np.arccos((L3**2 + d**2 - L5**2) / (2 * L3 * d))
-	theta2b = np.arccos(r / d)
-	theta2 = -(theta2a + theta2b)
- 
-	# theta4
-	a = 2 * np.pi - v + theta2 - np.pi / 2
-	b = np.pi - a
+	
 	theta4 = -(theta2 + theta3)
- 
-	# theta 5 always -90 degrees
-	theta5 = -np.pi / 2
- 
+	theta5 = -np.pi/2
 	print("theta1: ", theta1 * 180 / np.pi, "\ntheta2: ", theta2 * 180 / np.pi, "\ntheta3: ", theta3 * 180 / np.pi, "\ntheta4: ", theta4 * 180 / np.pi, "\ntheta5: ", theta5 * 180 / np.pi, "\ntheta6: ", theta6 * 180 / np.pi)
 	# ==============================================================#
 	return lab_fk(theta1, theta2, theta3, theta4, theta5, theta6)
+    
+    
+    
+    
+    
+    
