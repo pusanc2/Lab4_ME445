@@ -3,6 +3,25 @@ import numpy as np
 from scipy.linalg import expm
 from lab4_header import *
 
+# Test 1 (100, 100, 150, 90):
+# x = 99 mm
+# y = 103 mm
+# z = 145 mm
+#
+# Test 2 (100, 500, 100, 90):
+# x = 98 mm
+# y = 504 mm
+# z = 96 mm
+
+# helper functions for lab_fk
+def VecTose3(V):
+	return np.r_[np.c_[VecToso3([V[0], V[1], V[2]]), [V[3], V[4], V[5]]], np.zeros((1,4))]
+
+def VecToso3(omg):
+	return np.array([[0, -omg[2], omg[1]],[omg[2], 0, -omg[0]], [-omg[1], omg[0], 0]])
+
+
+
 """
 Use 'expm' for matrix exponential.
 Angles are in radian, distance are in meters.
@@ -10,46 +29,40 @@ Angles are in radian, distance are in meters.
 def Get_MS():
 	# =================== Your code starts here ====================#
 	# Fill in the correct values for a1~6 and q1~6, as well as the M matrix
-	M = np.array([[0, -1, 0, 390], [0, 0, -1, 401], [1, 0, 0, 215.5], [0, 0, 0, 1]])
+ 
+	M = np.array([[0, -1, 0, -150 + 244 + 213 + 83],
+               	  [0, 0, -1, 150 + 120 - 93 + 83 + 82 + 59],
+                  [1, 0,  0, 215.5],
+                  [0, 0,  0, 1],])
 	
-	w1 = np.array([0, 0, 1])
-	w2 = np.array([0, 1, 0])
-	w3 = np.array([0, 1, 0])
-	w4 = np.array([0, 1, 0])
-	w5 = np.array([1, 0, 0])
-	w6 = np.array([0, 1, 0])
-	q1 = np.array([-150,150,10])
-	q2 = np.array([-150,270,162])
-	q3 = np.array([94,270,162])
-	q4 = np.array([307,177,162])
-	q5 = np.array([307,260,162])	
-	q6 = np.array([390,260,162])
-	v1 = np.cross(-w1, q1)
-	v2 = np.cross(-w2, q2)
-	v3 = np.cross(-w3, q3)
-	v4 = np.cross(-w4, q4)
-	v5 = np.cross(-w5, q5)
-	v6 = np.cross(-w6, q6)
-	S1 = np.array([[0, -w1[2], w1[1], v1[0]], [w1[2], 0, -w1[0], v1[1]], [-w1[1], w1[0], 0, v1[2]], [0, 0, 0, 0]])
-	S2 = np.array([[0, -w2[2], w2[1], v2[0]], [w2[2], 0, -w2[0], v2[1]], [-w2[1], w2[0], 0, v2[2]], [0, 0, 0, 0]])
-	S3 = np.array([[0, -w3[2], w3[1], v3[0]], [w3[2], 0, -w3[0], v3[1]], [-w3[1], w3[0], 0, v3[2]], [0, 0, 0, 0]])
-	S4 = np.array([[0, -w4[2], w4[1], v4[0]], [w4[2], 0, -w4[0], v4[1]], [-w4[1], w4[0], 0, v4[2]], [0, 0, 0, 0]])
-	S5 = np.array([[0, -w5[2], w5[1], v5[0]], [w5[2], 0, -w5[0], v5[1]], [-w5[1], w5[0], 0, v5[2]], [0, 0, 0, 0]])
-	S6 = np.array([[0, -w6[2], w6[1], v6[0]], [w6[2], 0, -w6[0], v6[1]], [-w6[1], w6[0], 0, v6[2]], [0, 0, 0, 0]])
+ 
+	q1 = np.array([-150, 				  150, 				   10])
+	q2 = np.array([-150, 				  150 + 120, 		   10 + 152])
+	q3 = np.array([-150 + 244,			  150 + 120, 		   10 + 152])
+	q4 = np.array([-150 + 244 + 213,	  150 + 120 - 93, 	   10 + 152])
+	q5 = np.array([-150 + 244 + 213,      150 + 120 - 93 + 83, 10 + 152])
+	q6 = np.array([-150 + 244 + 213 + 83, 150 + 120 - 93 + 83, 10 + 152])
+
+	w1 = np.array([0,0,1])
+	w2 = np.array([0,1,0])
+	w3 = np.array([0,1,0])
+	w4 = np.array([0,1,0])
+	w5 = np.array([1,0,0])
+	w6 = np.array([0,1,0])
 	
-	L1 = 152
-	L2 = 120
-	L3 = 244
-	L4 = 93
-	L5 = 213
-	L6 = 83
-	L7 = 83
-	L8 = 82
-	L9 = 53.5
-	print(M, "\n")
+	S1 = np.block([w1, np.cross(-w1,q1)])
+	S2 = np.block([w2, np.cross(-w2,q2)])
+	S3 = np.block([w3, np.cross(-w3,q3)])
+	S4 = np.block([w4, np.cross(-w4,q4)])
+	S5 = np.block([w5, np.cross(-w5,q5)])
+	S6 = np.block([w6, np.cross(-w6,q6)])
+ 
+	S = np.block([[S1], [S2], [S3], [S4], [S5], [S6]])
+ 
+
 
 	# ==============================================================#
-	return M, S1, S2, S3, S4, S5, S6
+	return M, S
 
 
 """
@@ -60,19 +73,31 @@ def lab_fk(theta1, theta2, theta3, theta4, theta5, theta6):
 	# Initialize the return_value
 	return_value = [None, None, None, None, None, None]
 
-	print("Foward kinematics calculated:\n")
+	print("Thetas calculated:\n")
+ 
 
 	# =================== Your code starts here ====================#
-	theta = np.array([theta1,theta2,theta3,theta4,theta5,theta6])
+	theta = np.degrees(np.array([theta1,theta2,theta3,theta4,theta5,theta6]))
+ 
+	print(str(theta) + '\n')
+ 
 	T = np.eye(4)
-
-	M, S1, S2, S3, S4, S5, S6= Get_MS()
-	T = expm(S1*theta1)@expm(S2*theta2)@expm(S3*theta3)@expm(S4*theta4)@expm(S5*theta5)@expm(S6*theta6)@M
-
+	M, S = Get_MS()
+ 
+	S1_mat = VecTose3(S[0])
+	S2_mat = VecTose3(S[1])
+	S3_mat = VecTose3(S[2])
+	S4_mat = VecTose3(S[3])
+	S5_mat = VecTose3(S[4])
+	S6_mat = VecTose3(S[5])
+ 
+	T = expm(S1_mat * theta1) @ expm(S2_mat * theta2) @ expm(S3_mat * theta3) @ expm(S4_mat * theta4) @ expm(S5_mat * theta5) @ expm(S6_mat * theta6) @ M
+	
+	print("Foward kinematics calculated:\n")
+	print(str(T) + "\n")
 
 
 	# ==============================================================#
-	print(str(T) + "\n")
 
 	return_value[0] = theta1 + PI
 	return_value[1] = theta2
@@ -89,6 +114,14 @@ Function that calculates an elbow up Inverse Kinematic solution for the UR3
 """
 def lab_invk(xWgrip, yWgrip, zWgrip, yaw_WgripDegree):
 	# =================== Your code starts here ====================#
+	
+	# convert World coordinates to Base coordinates (frame 0)
+	x_grip = xWgrip + 150
+	y_grip = yWgrip - 150
+	z_grip = zWgrip - 10
+	yaw_WgripRadians = np.radians(yaw_WgripDegree)
+	
+	# arm lengths
 	L1 = 152
 	L2 = 120
 	L3 = 244
@@ -98,50 +131,60 @@ def lab_invk(xWgrip, yWgrip, zWgrip, yaw_WgripDegree):
 	L7 = 83
 	L8 = 82
 	L9 = 53.5
-	print(xWgrip)
-	xWgrip = xWgrip*1000 + 150
-	yWgrip = yWgrip*1000 - 150
-	zWgrip = zWgrip*1000 - 10
-	yaw_WgripDegree = np.deg2rad(yaw_WgripDegree)
-	xcen =  xWgrip - (L9*np.cos(yaw_WgripDegree))
-	ycen = yWgrip - (L9*np.sin(yaw_WgripDegree))
-	zcen  = zWgrip
-	
-	a = np.sqrt(xcen**2 + ycen**2)
-	b = L2-L4+L6
-	print(a)
-	print(b)
-	stheta = np.arcsin(b/a)
-	total_theta = np.arctan(ycen/xcen)
-	theta1 = total_theta - stheta
-	# print(theta1)
-	theta6 = (np.pi/2)-yaw_WgripDegree+theta1
- #####################################################################
-	x3end = xcen - np.cos(theta1)*L7 + np.sin(theta1)*110 # 83+27
-	y3end = ycen - np.sin(theta1)*L7 + np.cos(theta1)*110
-	z3end = zcen + 59 + L8
-	
+	L10 = 59
  
-	r = np.sqrt(x3end**2 + y3end**2)
-	 
-	delta_z = z3end - L1
-	d = np.sqrt(r**2 + delta_z**2)
-	v = np.arccos((L5**2 + L3**2 - d**2) / (2 * L5 * L3))
-	theta3 = np.pi - v
-	theta2_1 = np.arccos(r / d)
-	theta2_2 = np.arccos((L3**2 + d**2 - L5**2) / (2 * L3 * d))
+	# find wrist's center point
+	x_cen = x_grip - L9*np.cos(yaw_WgripRadians)
+	y_cen =	y_grip - L9*np.sin(yaw_WgripRadians)
+	z_cen = z_grip
 	
-	theta2 = -(theta2_1 + theta2_2)
+	# find theta1 (waist angle)
+	if (((L2-L4+L6)/np.sqrt(x_cen**2 + y_cen**2)) > 1):
+		print("WARNING: INVALID POSITION")
+ 
+	theta_small = np.arcsin((L2-L4+L6)/np.sqrt(x_cen**2 + y_cen**2))
+	theta_big = np.arctan2(y_cen, x_cen)
+	theta1 = theta_big - theta_small
  
 	
-	theta4 = -(theta2 + theta3)
+	# print("x_cen, y_cen, z_cen:", x_cen, y_cen, z_cen)
+	# print("theta_small:", np.degrees(theta_small), "theta_big:", np.degrees(theta_big))
+	
+ 
+	# find theta6
+	theta6 = np.pi/2 + theta1 - yaw_WgripRadians
+ 
+	# find projected endpoint
+	x_3end = x_cen - L7*np.cos(theta1) + (L6+27)*np.sin(theta1)
+	y_3end = y_cen - L7*np.sin(theta1) - (L6+27)*np.cos(theta1)
+	z_3end = z_cen + L10 + L8 
+ 
+	# find theta2, theta3, theta4
+	hypotenuse_xy = np.sqrt((x_3end)**2 + (y_3end)**2)	
+	
+	d = np.sqrt((z_3end - L1)**2 + (hypotenuse_xy)**2)
+	thetau = np.arccos((L3**2 + L5**2 - d**2)/(2*L3*L5))
+	
+	theta3 = np.pi - thetau
+ 
+	theta2_big = np.arccos((L3**2 + d**2 - L5**2)/(2*L3*d))
+	theta2_small = np.arctan2((z_3end - L1), (hypotenuse_xy))
+	theta2 = -(theta2_big + theta2_small)
+ 
+	theta4 = -(theta3 + theta2)
+ 
+ 
 	theta5 = -np.pi/2
-	print("theta1: ", theta1 * 180 / np.pi, "\ntheta2: ", theta2 * 180 / np.pi, "\ntheta3: ", theta3 * 180 / np.pi, "\ntheta4: ", theta4 * 180 / np.pi, "\ntheta5: ", theta5 * 180 / np.pi, "\ntheta6: ", theta6 * 180 / np.pi)
 	# ==============================================================#
-	return lab_fk(theta1, theta2, theta3, theta4, theta5, theta6)
-    
-    
-    
-    
-    
-    
+	return lab_fk(theta1, 
+               	theta2, 
+                theta3, 
+                theta4, 
+                theta5, 
+                theta6)
+	# return lab_fk(np.degrees(theta1), 
+    #            	np.degrees(theta2), 
+    #             np.degrees(theta3), 
+    #             np.degrees(theta4), 
+    #             np.degrees(theta5), 
+    #             np.degrees(theta6))
