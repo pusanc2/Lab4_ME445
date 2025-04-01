@@ -86,7 +86,7 @@ def lab_fk(theta1, theta2, theta3, theta4, theta5, theta6):
 	
 	T = T @ M
 
-	#np.set_printoptions(suppress=True, precision=8)
+	np.set_printoptions(suppress=True, precision=8)
 
 	# ==============================================================#
 
