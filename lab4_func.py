@@ -154,7 +154,8 @@ def lab_invk(xWgrip, yWgrip, zWgrip, yaw_WgripDegree):
 	zoffset = z3end - L1
 	r = np.sqrt(x3end**2 + y3end**2)
 	h = np.sqrt(r**2 + zoffset**2)
-	theta3 = np.pi - np.arccos((L5**2 + L3**2 - h**2)/(2 * L5 * L3))
+	a = np.arccos((L5**2 + L3**2 - h**2)/(2 * L5 * L3))
+	theta3 = np.pi - a
 
 	#theta2
 	theta2a = np.arccos((L3**2 + h**2 - L5**2) / (2 * L3 * h))
@@ -162,9 +163,7 @@ def lab_invk(xWgrip, yWgrip, zWgrip, yaw_WgripDegree):
 	theta2 = -(theta2a + theta2b)
 
 	#theta4
-	theta4a = np.pi - (np.pi - theta3) + theta2a
-	smallangle = np.pi/2 - theta4a 
-	theta4 = -(np.pi - np.pi/2 - theta2b - smallangle)
+	theta4 = -(theta2 + theta3)
   
 	print("theta1: ", theta1 * 180 / np.pi, "\ntheta2: ", theta2 * 180 / np.pi, 
        "\ntheta3: ", theta3 * 180 / np.pi, "\ntheta4: ", theta4 * 180 / np.pi, 
